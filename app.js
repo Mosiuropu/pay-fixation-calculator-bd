@@ -11,7 +11,7 @@ const SCALE_2015 = {
     5:  { min: 43000, max: 69850 },
     6:  { min: 35500, max: 67010 },
     7:  { min: 29000, max: 63410 },
-    8:  { min: 23000, max: 55460 },
+    8:  { min: 23000, max: 55470 },
     9:  { min: 22000, max: 53060 },
     10: { min: 16000, max: 38640 },
     11: { min: 12500, max: 30230 },
@@ -66,8 +66,21 @@ const MEDICAL_ALLOWANCE = 1500;
 // ---- Tiffin Allowance ----
 const TIFFIN_ALLOWANCE = 1000;
 
-// ---- Increment Rate ----
-const INCREMENT_RATE = 0.05; // 5%
+// ---- Annual Increment Rates by grade (BD National Pay Scale 2015) ----
+// Higher grades progress slower than the standard 5%. These rates, combined
+// with rounding each new basic UP to the next 10 taka, reproduce the official
+// gazette increment chart exactly for every grade.
+const INCREMENT_RATES = {
+    2: 0.0375,
+    3: 0.04,
+    4: 0.04,
+    5: 0.045
+    // grades 6–20 use the default 5%
+};
+const DEFAULT_INCREMENT_RATE = 0.05;
+function incrementRate(grade) {
+    return INCREMENT_RATES[grade] ?? DEFAULT_INCREMENT_RATE;
+}
 
 // ---- Translations ----
 const TRANSLATIONS = {
@@ -184,24 +197,27 @@ const TRANSLATIONS = {
 let currentLang = 'en';
 
 // ---- Generate increment steps for a grade ----
-// Official BD National Pay Scale 2015 rule: annual increment = 5% of the
-// running basic, rounded to the NEAREST 10 taka, compounded each year.
-// Basics therefore stay multiples of 10 (e.g. Grade 9: 22000 → 23100 →
-// 24260 → 25470 ...). The final stage is the grade ceiling (max).
+// Official BD National Pay Scale 2015 rule: each annual increment adds the
+// grade's increment rate to the running basic, then the new basic is rounded
+// UP to the next 10 taka, compounded each year. Basics stay multiples of 10
+// (e.g. Grade 9: 22000 → 23100 → 24260 → 25480 ...). The final stage is the
+// grade ceiling (max). This reproduces the gazette chart exactly.
 function generateSteps(scale, grade) {
     const g = scale[grade];
     if (!g) return [];
     if (g.fixed) return [{ step: 1, value: g.min }];
 
+    const rate = incrementRate(grade);
     const steps = [];
     let current = g.min; // gazette basics are multiples of 10
     let stepNum = 1;
 
-    while (current < g.max && stepNum <= 50) {
+    while (current < g.max && stepNum <= 60) {
         steps.push({ step: stepNum, value: current });
-        const increment = Math.round((current * INCREMENT_RATE) / 10) * 10;
-        if (increment <= 0) break;
-        current += increment;
+        // Round each new basic UP to the next 10 taka
+        const next = Math.ceil((current * (1 + rate)) / 10) * 10;
+        if (next <= current) break;
+        current = next;
         stepNum++;
     }
 
