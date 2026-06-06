@@ -6,6 +6,14 @@ A clean, dark-themed web calculator for Bangladeshi government service holders t
 ![Language](https://img.shields.io/badge/languages-EN%20|%20বাংলা-purple)
 ![Status](https://img.shields.io/badge/status-Proposed%20(not%20yet%20official)-orange)
 
+## 🔗 Live Website — Use It Online (No Install Needed)
+
+**👉 [https://mosiuropu.github.io/pay-fixation-calculator-bd/](https://mosiuropu.github.io/pay-fixation-calculator-bd/)**
+
+[![Open Live Site](https://img.shields.io/badge/Open-Live%20Calculator-success?style=for-the-badge)](https://mosiuropu.github.io/pay-fixation-calculator-bd/)
+
+Just open the link in any browser — desktop or mobile. Nothing to download or install. Works in English and বাংলা.
+
 ## ✨ Features
 
 - **Pay Fixation Calculation** — Estimates your new basic pay based on the proposed 9th Pay Scale
@@ -60,7 +68,7 @@ This is a static website — no build step required!
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/pay-fixation-calculator-bd.git
+   git clone https://github.com/Mosiuropu/pay-fixation-calculator-bd.git
    ```
 
 2. Open `index.html` in any modern web browser
@@ -69,10 +77,12 @@ That's it! The calculator runs entirely in the browser.
 
 ### GitHub Pages
 
-To host for free on GitHub:
+This site is already live at **[https://mosiuropu.github.io/pay-fixation-calculator-bd/](https://mosiuropu.github.io/pay-fixation-calculator-bd/)**.
+
+To host your own copy for free on GitHub:
 
 1. Go to your repo → **Settings** → **Pages**
-2. Set **Source** to `main` branch
+2. Set **Source** to the `master` branch
 3. Your calculator will be live at `https://YOUR_USERNAME.github.io/pay-fixation-calculator-bd/`
 
 ## 📊 Pay Scale Reference
