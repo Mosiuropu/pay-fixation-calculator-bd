@@ -136,7 +136,9 @@ const TRANSLATIONS = {
         th_increase: "Increase",
         footer_disclaimer: "This calculator is for estimation purposes only. The proposed 9th National Pay Scale is not yet officially gazetted. Always verify with official government sources.",
         no_increment: "No increment (fixed grade)",
-        generated: "Report generated:"
+        generated: "Report generated:",
+        grade_word: "Grade",
+        footer_copy: "© 2026 Pay Fixation Calculator BD"
     },
     bn: {
         title: "পে ফিক্সেশন ক্যালকুলেটর",
@@ -190,11 +192,24 @@ const TRANSLATIONS = {
         th_increase: "বৃদ্ধি",
         footer_disclaimer: "এই ক্যালকুলেটর শুধুমাত্র আনুমানিক হিসাবের জন্য। প্রস্তাবিত নবম জাতীয় পে স্কেল এখনও চূড়ান্তভাবে গেজেটে প্রকাশিত হয়নি। সর্বদা সরকারি উৎস থেকে যাচাই করুন।",
         no_increment: "কোনো ইনক্রিমেন্ট নেই (নির্ধারিত গ্রেড)",
-        generated: "রিপোর্ট তৈরির তারিখ:"
+        generated: "রিপোর্ট তৈরির তারিখ:",
+        grade_word: "গ্রেড",
+        footer_copy: "© ২০২৬ পে ফিক্সেশন ক্যালকুলেটর বিডি"
     }
 };
 
 let currentLang = 'en';
+
+// ---- Bangla numeral helper ----
+const BN_DIGITS = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+function localizeDigits(str) {
+    if (currentLang !== 'bn') return String(str);
+    return String(str).replace(/[0-9]/g, d => BN_DIGITS[d]);
+}
+// Format a number with thousands separators, localized to the current language
+function fmtNum(n) {
+    return localizeDigits(n.toLocaleString('en-IN'));
+}
 
 // ---- Generate increment steps for a grade ----
 // Official BD National Pay Scale 2015 rule: each annual increment adds the
@@ -310,14 +325,14 @@ function calculate() {
     // 10. Total gross
     const totalGross = finalNewBasic + houseRent + medical + tiffin;
 
-    // Format numbers with commas
-    const fmt = (n) => n.toLocaleString('en-IN');
+    // Format numbers with commas (localized digits for Bangla)
+    const fmt = fmtNum;
 
     // Render results
     const t = TRANSLATIONS[currentLang];
 
     document.getElementById('resultGradeInfo').innerHTML =
-        `${currentLang === 'en' ? 'Grade' : 'গ্রেড'}: <strong>${grade}</strong> | ` +
+        `${currentLang === 'en' ? 'Grade' : 'গ্রেড'}: <strong>${localizeDigits(grade)}</strong> | ` +
         `${currentLang === 'en' ? 'Current Basic' : 'বর্তমান বেসিক'}: <strong>৳${fmt(currentBasic)}</strong>`;
 
     const rows = [
@@ -325,18 +340,18 @@ function calculate() {
         { label: t.row2, value: earnedIncrement > 0 ? `+৳${fmt(earnedIncrement)}` : `— (${t.no_increment})`, highlight: false },
         { label: t.row3, value: `৳${fmt(initialBasic2026)}`, highlight: false },
         { label: t.row4, value: `৳${fmt(coordinatedBasic)}`, highlight: false },
-        { label: t.row5, value: `৳${fmt(higherStep.value)} (Step ${higherStep.step})`, highlight: false },
+        { label: t.row5, value: `৳${fmt(higherStep.value)} (${t.col_step} ${localizeDigits(higherStep.step)})`, highlight: false },
         { label: t.row6, value: difference > 0 ? `৳${fmt(difference)}` : '৳0', highlight: false },
         { label: t.row7, value: `+৳${fmt(cashBenefit)}`, highlight: true },
         { label: t.row8, value: `৳${fmt(finalNewBasic)}`, highlight: true },
-        { label: t.row9, value: `৳${fmt(houseRent)} (${Math.round(hraRate * 100)}%)`, highlight: false },
+        { label: t.row9, value: `৳${fmt(houseRent)} (${localizeDigits(Math.round(hraRate * 100))}%)`, highlight: false },
         { label: t.row10, value: `৳${fmt(medical)}`, highlight: false },
         ...(tiffin > 0 ? [{ label: t.row11, value: `৳${fmt(tiffin)}`, highlight: false }] : [])
     ];
 
     const rowsHtml = rows.map((r, i) => `
         <div class="result-row ${r.highlight ? 'row-highlight' : ''}">
-            <span class="row-num">${String(i + 1).padStart(2, '0')}</span>
+            <span class="row-num">${localizeDigits(String(i + 1).padStart(2, '0'))}</span>
             <span class="row-label">${r.label}</span>
             <span class="row-value">${r.value}</span>
         </div>
@@ -376,7 +391,7 @@ function populateSteps(grade) {
     steps.forEach(s => {
         const opt = document.createElement('option');
         opt.value = s.step;
-        opt.textContent = `${stepLabel} ${s.step} — ৳${s.value.toLocaleString('en-IN')}`;
+        opt.textContent = `${stepLabel} ${localizeDigits(s.step)} — ৳${fmtNum(s.value)}`;
         stepSelect.appendChild(opt);
     });
 
@@ -413,19 +428,19 @@ function populateTable() {
         const s26 = SCALE_2026[g];
 
         const range15 = s15.fixed
-            ? `৳${s15.min.toLocaleString('en-IN')}`
-            : `৳${s15.min.toLocaleString('en-IN')} – ৳${s15.max.toLocaleString('en-IN')}`;
+            ? `৳${fmtNum(s15.min)}`
+            : `৳${fmtNum(s15.min)} – ৳${fmtNum(s15.max)}`;
 
         const range26 = s26.fixed
-            ? `৳${s26.min.toLocaleString('en-IN')}`
-            : `৳${s26.min.toLocaleString('en-IN')} – ৳${s26.max.toLocaleString('en-IN')}`;
+            ? `৳${fmtNum(s26.min)}`
+            : `৳${fmtNum(s26.min)} – ৳${fmtNum(s26.max)}`;
 
         const pctIncrease = s15.min > 0
-            ? `+${Math.round(((s26.min - s15.min) / s15.min) * 100)}%`
+            ? `+${localizeDigits(Math.round(((s26.min - s15.min) / s15.min) * 100))}%`
             : '—';
 
         html += `<tr>
-            <td>${g}</td>
+            <td>${localizeDigits(g)}</td>
             <td>${range15}</td>
             <td>${range26}</td>
             <td>${pctIncrease}</td>
@@ -433,6 +448,16 @@ function populateTable() {
     }
 
     tbody.innerHTML = html;
+}
+
+// ---- Translate Grade dropdown option labels ----
+function populateGradeLabels() {
+    const gradeSelect = document.getElementById('gradeSelect');
+    const t = TRANSLATIONS[currentLang];
+    gradeSelect.querySelectorAll('option').forEach(opt => {
+        if (!opt.value) return; // skip placeholder (handled separately)
+        opt.textContent = `${t.grade_word} ${localizeDigits(opt.value)}`;
+    });
 }
 
 // ---- Language Switching ----
@@ -474,6 +499,9 @@ function setLanguage(lang) {
         b.classList.toggle('active', b.getAttribute('data-lang') === lang);
     });
 
+    // Translate grade dropdown labels
+    populateGradeLabels();
+
     // Re-populate steps if grade is selected
     const currentGrade = gradeSelect.value;
     if (currentGrade) {
@@ -482,6 +510,12 @@ function setLanguage(lang) {
 
     // Re-populate table
     populateTable();
+
+    // If a result report is already displayed, re-render it in the new language
+    const resultPanel = document.getElementById('resultPanel');
+    if (resultPanel.style.display === 'block') {
+        calculate();
+    }
 }
 
 // ---- Event Listeners ----
@@ -508,5 +542,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Initialize
+    populateGradeLabels();
     populateTable();
 });
