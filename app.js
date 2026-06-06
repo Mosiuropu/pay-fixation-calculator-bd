@@ -184,28 +184,29 @@ const TRANSLATIONS = {
 let currentLang = 'en';
 
 // ---- Generate increment steps for a grade ----
+// Official BD National Pay Scale 2015 rule: annual increment = 5% of the
+// running basic, rounded to the NEAREST 10 taka, compounded each year.
+// Basics therefore stay multiples of 10 (e.g. Grade 9: 22000 → 23100 →
+// 24260 → 25470 ...). The final stage is the grade ceiling (max).
 function generateSteps(scale, grade) {
     const g = scale[grade];
     if (!g) return [];
     if (g.fixed) return [{ step: 1, value: g.min }];
 
     const steps = [];
-    let current = g.min;
+    let current = g.min; // gazette basics are multiples of 10
     let stepNum = 1;
 
-    while (current <= g.max && stepNum <= 50) {
-        steps.push({ step: stepNum, value: Math.round(current) });
-        current = current * (1 + INCREMENT_RATE);
+    while (current < g.max && stepNum <= 50) {
+        steps.push({ step: stepNum, value: current });
+        const increment = Math.round((current * INCREMENT_RATE) / 10) * 10;
+        if (increment <= 0) break;
+        current += increment;
         stepNum++;
     }
 
-    // Make sure the last step is the max
-    if (steps.length > 0) {
-        const lastStep = steps[steps.length - 1];
-        if (lastStep.value < g.max) {
-            steps.push({ step: stepNum, value: g.max });
-        }
-    }
+    // Final stage is the official grade maximum (ceiling)
+    steps.push({ step: stepNum, value: g.max });
 
     return steps;
 }
